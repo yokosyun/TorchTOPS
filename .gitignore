@@ -1,0 +1,7 @@
+results
+**/__pycache__
+*.png
+*.jpg
+*egg-info
+**/__init__.pyc
+dist/
