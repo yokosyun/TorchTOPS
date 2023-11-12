@@ -1,6 +1,7 @@
 import os
 import argparse
 import yaml
+from itertools import islice
 import matplotlib.pyplot as plt
 import torch
 import torchvision
@@ -71,7 +72,7 @@ if __name__ == "__main__":
     print(f"saved to {save_path}")
 
     print("=== low TOPS layers ===")
-    for tops, layer_name, module in zip(
-        tops_list[:worst_k], layer_names[:worst_k], modules[:worst_k]
+    for tops, layer_name, module in islice(
+        zip(tops_list, layer_names, modules), worst_k
     ):
         print(f"{tops:.3f}  => {layer_name} : {module}")
