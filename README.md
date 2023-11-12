@@ -13,7 +13,7 @@ import torchvision
 from torchtops import profile, filter_modules
 
 model = torchvision.models.resnet18().cuda().eval()
-img = torch.rand([1, 3, 256, 256]).cuda()
+img = torch.rand([1, 3, 224, 224]).cuda()
 
 res = profile(model, img)
 
