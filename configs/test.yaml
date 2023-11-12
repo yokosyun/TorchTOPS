@@ -1,5 +1,6 @@
-model:
-  name: "resnet152"
+model_name: "resnet152"
+model_cfg:
+  weights:
 
 input_shape: [1, 3, 224, 224]
 use_cuda: True

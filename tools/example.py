@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     os.makedirs(cfg["save_dir"], exist_ok=True)
 
-    model = getattr(torchvision.models, cfg["model"]["name"])()
+    model = torchvision.models.get_model(cfg["model_name"], **cfg["model_cfg"])
 
     model = model.eval()
 
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     worst_k = min(len(layer_names), cfg["worst_k"])
 
-    save_path = cfg["save_dir"] + "/" + cfg["model"]["name"] + ".png"
+    save_path = cfg["save_dir"] + "/" + cfg["model_name"] + ".png"
 
     plot_results(
         x=layer_names[:worst_k],
