@@ -19,8 +19,8 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
     layer_names = []
     modules = []
     for layer_name, latency in prof.trace_latency.items():
-        flops = flops_dict.get(layer_name, None)
-        if flops == 0 or flops is None:
+        flops = flops_dict.get(layer_name, 0)
+        if flops == 0:
             continue
 
         tops = flops / latency / 1.0e12
