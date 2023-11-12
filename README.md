@@ -27,7 +27,7 @@ for tops, layer_name, module in zip(tops_list, layer_names, modules):
         print(f"{tops:.3f}  => {layer_name} : {module}")
 ```
 
-output results. this results will depend on your hardware
+this results depend on your hardware
 ```
 0.178  => layer4.0.downsample.0 : Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
 0.179  => layer3.0.downsample.0 : Conv2d(128, 256, kernel_size=(1, 1), stride=(2, 2), bias=False)
@@ -50,3 +50,19 @@ output results. this results will depend on your hardware
 1.598  => layer1.0.conv2 : Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
 1.610  => layer1.1.conv1 : Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
 ```
+
+
+## Plot Results
+
+```
+python3.8 tools/example.py
+```
+
+### ResNet152
+<img src="resources/resnet152.png" width="600">
+
+### Vit_b_16
+<img src="resources/vit_b_16.png" width="600">
+
+### Swin
+<img src="resources/swin_v2_b.png" width="600">
