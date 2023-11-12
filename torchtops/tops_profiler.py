@@ -17,12 +17,10 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
     latencies = []
     tops_list = []
     layer_names = []
-    unsupported_ops_list = []
     modules = []
     for layer_name, latency in prof.trace_latency.items():
         flops = flops_dict.get(layer_name, None)
         if flops == 0 or flops is None:
-            unsupported_ops_list.append(layer_name)
             continue
 
         tops = flops / latency / 1.0e12
@@ -36,7 +34,6 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
         "layer_names": layer_names,
         "latencies": latencies,
         "tops_list": tops_list,
-        "unsupported_ops_list": unsupported_ops_list,
-        "total_flops": total_flops,
         "modules": modules,
+        "total_flops": total_flops,
     }
