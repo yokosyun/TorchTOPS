@@ -1,6 +1,7 @@
 # Development
+set up to develop torchtops
 
-## install
+## Install
 ```
 mkdir ~/venv
 python3.8 -m venv ~/venv/torchtops
@@ -10,13 +11,13 @@ pip3 install -r requirements.txt
 pre-commit install
 ```
 
-## set environment path
+## Set environment path
 set PYTHONPATH as root of this repository
 ```
 export PYTHONPATH=$PWD:$PYTHONPATH
 ```
 
-## test
+## Test
 ```
 python3.8 tools/example.py
 ```
