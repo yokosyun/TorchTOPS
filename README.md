@@ -59,10 +59,10 @@ python3.8 tools/example.py
 ```
 
 ### ResNet152
-<img src="resources/resnet152.png" width="600">
+<img src="resources/resnet152.jpg" width="600">
 
 ### Vit_b_16
-<img src="resources/vit_b_16.png" width="600">
+<img src="resources/vit_b_16.jpg" width="600">
 
 ### Swin
-<img src="resources/swin_v2_b.png" width="600">
+<img src="resources/swin_v2_b.jpg" width="600">
