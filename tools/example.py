@@ -23,7 +23,7 @@ def get_argparse():
     parser.add_argument(
         "--yaml",
         type=str,
-        default="configs/test.yaml",
+        default="configs/example.yaml",
         help="path to yaml",
     )
     return parser.parse_args()
