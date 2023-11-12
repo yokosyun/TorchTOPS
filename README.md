@@ -1,14 +1,14 @@
 # torchtops(Pytorch TOPS)
 [![Pypi version](https://img.shields.io/pypi/v/torchtops.svg)](https://pypi.org/project/torchtops/)
 
-This toolkit evaluate TOPS(Terra Operations Per Second) of each layer of your model
+This toolkit evaluate layer level TOPS(Terra Operations Per Second)
 
 these items will be retuned by profile
-- layer_names (List[str]) - name of the layer
-- latencies (List[float]) - latency of the layer in seconds
-- tops_list (List[float]) - tops of the layer
-- modules (List[nn.Module]) - List of nn.Module of the layer
-- total_flops (int) - total flops of model
+- layer_names (List[str]) - List of layer names
+- latencies (List[float]) - List of latency in seconds
+- tops_list (List[float]) - List of tops
+- modules (List[nn.Module]) - List of nn.Module
+- total_flops (int) - total flops of the model
 
 ## Quickstart
 
@@ -70,5 +70,5 @@ python3.8 tools/example.py
 ### Vit_b_16
 <img src="resources/vit_b_16.jpg" width="600">
 
-### Swin
+### Swin_v2_b
 <img src="resources/swin_v2_b.jpg" width="600">
