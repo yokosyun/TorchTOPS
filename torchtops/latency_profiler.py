@@ -26,7 +26,6 @@ class LatencyProfile(object):
     def __init__(self, model, enabled=True):
         self._model = model
         self.enabled = enabled
-        self.exited = False
         self.traces = ()
         self._ids = set()
         self.trace_latency = defaultdict(float)
@@ -44,7 +43,6 @@ class LatencyProfile(object):
             return
         tuple(map(self._remove_hook_trace, self.traces))
         del self._forwards  # remove unnecessary forwards
-        self.exited = True
 
     def __call__(self, *args, **kwargs):
         return self._model(*args, **kwargs)
