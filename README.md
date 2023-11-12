@@ -3,6 +3,13 @@
 
 This toolkit evaluate TOPS(Terra Operations Per Second) of each layer of your model
 
+these items will be retuned by profile
+- layer_names (List[str]) - name of the layer
+- latencies (List[float]) - latency of the layer in seconds
+- tops_list (List[float]) - tops of the layer
+- modules (List[nn.Module]) - List of nn.Module of the layer
+- total_flops (int) - total flops of model
+
 ## Quickstart
 
 `pip install torchtops`
@@ -50,7 +57,6 @@ this results depend on your hardware
 1.598  => layer1.0.conv2 : Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
 1.610  => layer1.1.conv1 : Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
 ```
-
 
 ## Plot Results
 
