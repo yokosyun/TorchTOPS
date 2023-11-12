@@ -23,25 +23,18 @@ def walk_modules(module, name="", path=""):
 class LatencyProfile(object):
     """Layer by layer profiling latency of PyTorch models"""
 
-    def __init__(self, model, enabled=True, paths=None):
+    def __init__(self, model, enabled=True):
         self._model = model
         self.enabled = enabled
-        self.paths = paths
-
-        self.entered = False
         self.exited = False
         self.traces = ()
         self._ids = set()
-        self.trace_profile_events = defaultdict(list)
         self.trace_latency = defaultdict(float)
         self.iterations = 10
 
     def __enter__(self):
         if not self.enabled:
             return self
-        if self.entered:
-            raise RuntimeError("torchprof profiler is not reentrant")
-        self.entered = True
         self._forwards = {}  # store the original forward functions
         self.traces = tuple(map(self._hook_trace, walk_modules(self._model)))
         return self
@@ -59,9 +52,7 @@ class LatencyProfile(object):
     def _hook_trace(self, trace):
         [path, leaf, module] = trace
         _id = id(module)
-        if (self.paths is not None and path in self.paths) or (
-            self.paths is None and leaf
-        ):
+        if leaf:
             if _id in self._ids:
                 # already wrapped
                 return trace
@@ -95,7 +86,5 @@ class LatencyProfile(object):
             self._ids.discard(_id)
         else:
             return
-        if (self.paths is not None and path in self.paths) or (
-            self.paths is None and leaf
-        ):
+        if leaf:
             module.forward = self._forwards[path]
