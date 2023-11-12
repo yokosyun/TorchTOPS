@@ -7,8 +7,8 @@ use_cuda: True
 worst_k: 10
 target_modules:
   - "Conv2d"
-  # - "Conv1d"
-  # - "Linear"
+  - "Conv1d"
+  - "Linear"
   # - "ReLU"
   # - "BatchNorm2d"
 save_dir: "results"

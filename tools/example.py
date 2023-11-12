@@ -7,9 +7,10 @@ import torchvision
 from torchtops import profile, filter_modules
 
 
-def plot_results(x, y, title: str, y_label: str, filename: str):
+def plot_results(x, y, main_title: str, sub_title: str, y_label: str, filename: str):
     fig, ax = plt.subplots()
-    plt.title(title, fontsize=12)
+    plt.suptitle(main_title)
+    plt.title(sub_title, fontsize=12)
     ax.bar(x, y)
     fig.autofmt_xdate()
     plt.ylabel(y_label)
@@ -49,19 +50,20 @@ if __name__ == "__main__":
 
     res = filter_modules(res, target_modules=cfg["target_modules"])
 
-    title = "shape=(" + ",".join(map(str, img.shape)) + ")"
+    sub_title = "shape=(" + ",".join(map(str, img.shape)) + ")"
     tops_list, layer_names, modules = zip(
         *sorted(zip(res["tops_list"], res["layer_names"], res["modules"]))
     )
 
     worst_k = min(len(layer_names), cfg["worst_k"])
 
-    save_path = cfg["save_dir"] + "/" + cfg["model_name"] + ".png"
+    save_path = cfg["save_dir"] + "/" + cfg["model_name"] + ".jpg"
 
     plot_results(
         x=layer_names[:worst_k],
         y=tops_list[:worst_k],
-        title=title,
+        main_title=cfg["model_name"],
+        sub_title=sub_title,
         y_label="TOPS",
         filename=save_path,
     )
