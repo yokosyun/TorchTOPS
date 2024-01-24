@@ -52,7 +52,7 @@ if __name__ == "__main__":
     res = filter_modules(res, target_modules=cfg["target_modules"])
 
     sub_title = "shape=(" + ",".join(map(str, img.shape)) + ")"
-    tops_list, layer_names, modules, input_shapes, params_list = zip(
+    tops_list, layer_names, modules, input_shapes, params_list, activation_list = zip(
         *sorted(
             zip(
                 res["tops_list"],
@@ -60,6 +60,7 @@ if __name__ == "__main__":
                 res["modules"],
                 res["input_shapes"],
                 res["params_list"],
+                res["activation_list"],
             )
         )
     )
@@ -80,10 +81,13 @@ if __name__ == "__main__":
     print(f"saved to {save_path}")
 
     print("=== low TOPS layers ===")
-    for tops, layer_name, module, input_shape, params in islice(
-        zip(tops_list, layer_names, modules, input_shapes, params_list), worst_k
+    for tops, layer_name, module, input_shape, params, activation in islice(
+        zip(
+            tops_list, layer_names, modules, input_shapes, params_list, activation_list
+        ),
+        worst_k,
     ):
         mega_params = params * 1e-6
         print(
-            f"{tops:.3f}  => {layer_name} : {module} : {input_shape} ,params={mega_params:.3f} [M]"
+            f"{tops:.3f}  => {layer_name} : {module} : {input_shape} ,params={mega_params:.3f} [M], activation={activation}"
         )

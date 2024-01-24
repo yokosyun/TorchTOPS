@@ -3,6 +3,7 @@ import functools
 from collections import defaultdict, namedtuple
 import numpy as np
 from torch import Tensor
+from typing import List, Dict
 
 Trace = namedtuple("Trace", ["path", "leaf", "module"])
 
@@ -30,6 +31,7 @@ class LatencyProfile(object):
         self._ids = set()
         self.trace_latency = defaultdict(float)
         self.trace_input_shape = defaultdict(list)
+        self.trace_output_shape = defaultdict(list)
         self.trace_params = defaultdict(int)
         self.iterations = 10
 
@@ -67,7 +69,7 @@ class LatencyProfile(object):
                     start = torch.cuda.Event(enable_timing=True)
                     end = torch.cuda.Event(enable_timing=True)
                     start.record()
-                    res = _forward(*args, **kwargs)
+                    results = _forward(*args, **kwargs)
                     end.record()
                     torch.cuda.synchronize()
                     latency = start.elapsed_time(end) / 1000  # miliseconds to seconds
@@ -79,7 +81,22 @@ class LatencyProfile(object):
                 self.trace_input_shape[path] += [
                     list(arg.shape) for arg in args if isinstance(arg, Tensor)
                 ]
-                return res
+
+                if isinstance(results, Tensor):
+                    self.trace_output_shape[path] = [list(results.shape)]
+                elif isinstance(results, List):
+                    self.trace_output_shape[path] += [
+                        list(res.shape) for res in results if isinstance(res, Tensor)
+                    ]
+                elif isinstance(results, Dict):
+                    self.trace_output_shape[path] += [
+                        list(res.shape)
+                        for res in results.values()
+                        if isinstance(res, Tensor)
+                    ]
+                else:
+                    assert False, path + "-> output is not Tensor, List, Dict"
+                return results
 
             module.forward = wrap_forward
         return trace
