@@ -52,8 +52,15 @@ if __name__ == "__main__":
     res = filter_modules(res, target_modules=cfg["target_modules"])
 
     sub_title = "shape=(" + ",".join(map(str, img.shape)) + ")"
-    tops_list, layer_names, modules = zip(
-        *sorted(zip(res["tops_list"], res["layer_names"], res["modules"]))
+    tops_list, layer_names, modules, input_shapes = zip(
+        *sorted(
+            zip(
+                res["tops_list"],
+                res["layer_names"],
+                res["modules"],
+                res["input_shapes"],
+            )
+        )
     )
 
     worst_k = min(len(layer_names), cfg["worst_k"])
@@ -72,7 +79,7 @@ if __name__ == "__main__":
     print(f"saved to {save_path}")
 
     print("=== low TOPS layers ===")
-    for tops, layer_name, module in islice(
-        zip(tops_list, layer_names, modules), worst_k
+    for tops, layer_name, module, input_shape in islice(
+        zip(tops_list, layer_names, modules, input_shapes), worst_k
     ):
-        print(f"{tops:.3f}  => {layer_name} : {module}")
+        print(f"{tops:.3f}  => {layer_name} : {module} : {input_shape}")

@@ -2,7 +2,7 @@ import torch
 import functools
 from collections import defaultdict, namedtuple
 import numpy as np
-
+from torch import Tensor
 
 Trace = namedtuple("Trace", ["path", "leaf", "module"])
 
@@ -29,6 +29,7 @@ class LatencyProfile(object):
         self.traces = ()
         self._ids = set()
         self.trace_latency = defaultdict(float)
+        self.trace_input_shape = defaultdict(list)
         self.iterations = 10
 
     def __enter__(self):
@@ -72,6 +73,9 @@ class LatencyProfile(object):
                     latencies.append(latency)
 
                 self.trace_latency[path] = np.median(latencies)
+                self.trace_input_shape[path] += [
+                    list(arg.shape) for arg in args if isinstance(arg, Tensor)
+                ]
                 return res
 
             module.forward = wrap_forward
