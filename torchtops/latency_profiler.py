@@ -3,7 +3,7 @@ import functools
 from collections import defaultdict, namedtuple
 import numpy as np
 from torch import Tensor
-from typing import List, Dict
+from typing import List, Dict, Union, Tuple
 
 Trace = namedtuple("Trace", ["path", "leaf", "module"])
 
@@ -21,6 +21,30 @@ def walk_modules(module, name="", path=""):
         yield from walk_modules(child_module, name=name, path=path)
 
 
+def get_shape_of_tensor(inputs: Union[Tensor, List, Tuple, Dict]) -> List[List[int]]:
+    if isinstance(inputs, Tensor):
+        return [list(inputs.shape)]
+    elif isinstance(inputs, List) or isinstance(inputs, Tuple):
+        return [get_shape_of_tensor(input) for input in inputs]
+    elif isinstance(inputs, Dict):
+        return [get_shape_of_tensor(input) for input in inputs.values()]
+    else:
+        print("ignore dtype =", type(inputs))
+        return []
+
+
+def numel(inputs: Union[Tensor, List, Tuple, Dict]) -> int:
+    if isinstance(inputs, Tensor):
+        return torch.numel(inputs)
+    elif isinstance(inputs, List) or isinstance(inputs, Tuple):
+        return sum([numel(input) for input in inputs])
+    elif isinstance(inputs, Dict):
+        return sum([numel(input) for input in inputs.values()])
+    else:
+        print("ignore dtype =", type(inputs))
+        return 0
+
+
 class LatencyProfile(object):
     """Layer by layer profiling latency of PyTorch models"""
 
@@ -33,6 +57,8 @@ class LatencyProfile(object):
         self.trace_input_shape = defaultdict(list)
         self.trace_output_shape = defaultdict(list)
         self.trace_params = defaultdict(int)
+        self.trace_read_counts = defaultdict(int)
+        self.trace_write_counts = defaultdict(int)
         self.iterations = 10
 
     def __enter__(self):
@@ -78,24 +104,12 @@ class LatencyProfile(object):
                 params = sum(x.numel() for x in module.parameters())
                 self.trace_params[path] = params
                 self.trace_latency[path] = np.median(latencies)
-                self.trace_input_shape[path] += [
-                    list(arg.shape) for arg in args if isinstance(arg, Tensor)
-                ]
+                self.trace_input_shape[path] = get_shape_of_tensor(
+                    args
+                ) + get_shape_of_tensor(kwargs)
+                self.trace_read_counts[path] = numel(args) + numel(kwargs)
+                self.trace_write_counts[path] = numel(results)
 
-                if isinstance(results, Tensor):
-                    self.trace_output_shape[path] = [list(results.shape)]
-                elif isinstance(results, List):
-                    self.trace_output_shape[path] += [
-                        list(res.shape) for res in results if isinstance(res, Tensor)
-                    ]
-                elif isinstance(results, Dict):
-                    self.trace_output_shape[path] += [
-                        list(res.shape)
-                        for res in results.values()
-                        if isinstance(res, Tensor)
-                    ]
-                else:
-                    assert False, path + "-> output is not Tensor, List, Dict"
                 return results
 
             module.forward = wrap_forward

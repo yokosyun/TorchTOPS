@@ -1,4 +1,3 @@
-import math
 from typing import Dict, Any
 from fvcore.nn import FlopCountAnalysis
 from torch import Tensor
@@ -20,9 +19,10 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
     layer_names = []
     modules = []
     input_shapes = []
-    output_shapes = []
     params_list = []
-    activation_list = []
+    read_counts_list = []
+    write_counts_list = []
+    arithmetric_intensity_list = []
     for layer_name, latency in prof.trace_latency.items():
         flops = flops_dict.get(layer_name, 0)
         if flops > 0:
@@ -32,14 +32,15 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
             latencies.append(latency)
             modules.append(get_module_by_layer_name(model, layer_name))
             input_shapes.append(prof.trace_input_shape[layer_name])
-            output_shapes.append(prof.trace_output_shape[layer_name])
             params_list.append(prof.trace_params[layer_name])
-
-            activation = sum(
-                math.prod(output_shape)
-                for output_shape in prof.trace_output_shape[layer_name]
+            read_counts_list.append(prof.trace_read_counts[layer_name])
+            write_counts_list.append(prof.trace_write_counts[layer_name])
+            arithmetric_intensity = flops / (
+                prof.trace_read_counts[layer_name]
+                + prof.trace_write_counts[layer_name]
+                + 1e-6
             )
-            activation_list.append(activation)
+            arithmetric_intensity_list.append(arithmetric_intensity)
 
     return {
         "layer_names": layer_names,
@@ -48,7 +49,8 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
         "modules": modules,
         "total_flops": total_flops,
         "input_shapes": input_shapes,
-        "output_shapes": output_shapes,
         "params_list": params_list,
-        "activation_list": activation_list,
+        "read_counts_list": read_counts_list,
+        "write_counts_list": write_counts_list,
+        "arithmetric_intensity_list": arithmetric_intensity_list,
     }
