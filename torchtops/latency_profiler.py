@@ -30,6 +30,7 @@ class LatencyProfile(object):
         self._ids = set()
         self.trace_latency = defaultdict(float)
         self.trace_input_shape = defaultdict(list)
+        self.trace_params = defaultdict(int)
         self.iterations = 10
 
     def __enter__(self):
@@ -72,6 +73,8 @@ class LatencyProfile(object):
                     latency = start.elapsed_time(end) / 1000  # miliseconds to seconds
                     latencies.append(latency)
 
+                params = sum(x.numel() for x in module.parameters())
+                self.trace_params[path] = params
                 self.trace_latency[path] = np.median(latencies)
                 self.trace_input_shape[path] += [
                     list(arg.shape) for arg in args if isinstance(arg, Tensor)
