@@ -47,7 +47,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
         "layer_name_list": layer_name_list,
         "latency_list": latency_list,
         "tops_list": tops_list,
-        "modules": modules,
+        "module_list": modules,
         "input_shape_list": input_shape_list,
         "params_list": params_list,
         "read_counts_list": read_counts_list,

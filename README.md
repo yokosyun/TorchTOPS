@@ -27,7 +27,7 @@ res = profile(model, img)
 res = filter_modules(res, target_modules=["Conv2d"]) # filter nn.Module you want to get
 
 tops_list, layer_name_list, modules = zip(
-        *sorted(zip(res["tops_list"], res["layer_name_list"], res["modules"]))
+        *sorted(zip(res["tops_list"], res["layer_name_list"], res["module_list"]))
     )
 
 for tops, layer_name, module in zip(tops_list, layer_name_list, modules):

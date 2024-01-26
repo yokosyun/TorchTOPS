@@ -18,7 +18,9 @@ def filter_modules(
     in_dict: Dict[str, Any], target_modules: List[str]
 ) -> Dict[str, Any]:
     target_modules = [getattr(nn, target_module) for target_module in target_modules]
-    masks = [isinstance(module, tuple(target_modules)) for module in in_dict["modules"]]
+    masks = [
+        isinstance(module, tuple(target_modules)) for module in in_dict["module_list"]
+    ]
 
     out_dict = in_dict.copy()
     for key, val in in_dict.items():
