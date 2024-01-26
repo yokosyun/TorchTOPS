@@ -8,7 +8,6 @@ from .utils import get_module_by_layer_name
 
 def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
     flops_counter = FlopCountAnalysis(model, input_data)
-    total_flops = flops_counter.total()
     flops_dict = flops_counter.by_module()
 
     with LatencyProfile(model) as prof:
@@ -49,11 +48,17 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
         "latencies": latencies,
         "tops_list": tops_list,
         "modules": modules,
-        "total_flops": total_flops,
         "input_shapes": input_shapes,
         "params_list": params_list,
         "read_counts_list": read_counts_list,
         "write_counts_list": write_counts_list,
         "arithmetric_intensity_list": arithmetric_intensity_list,
         "flops_list": flops_list,
+        "total_tops": sum(tops_list),
+        "total_params": sum(params_list),
+        "total_flops": sum(flops_list),
+        "total_read_counts": sum(read_counts_list),
+        "total_write_counts": sum(write_counts_list),
+        "total_latency": sum(latencies),
+        "total_arithmetric_intensity": sum(arithmetric_intensity_list),
     }
