@@ -5,7 +5,7 @@ This toolkit evaluate layer level TOPS(Terra Operations Per Second)
 
 these items will be retuned by profile
 - layer_names (List[str]) - List of layer names
-- latencies (List[float]) - List of latency in seconds
+- latency_list (List[float]) - List of latency in miliseconds
 - tops_list (List[float]) - List of tops
 - modules (List[nn.Module]) - List of nn.Module
 - total_flops (int) - total flops of the model

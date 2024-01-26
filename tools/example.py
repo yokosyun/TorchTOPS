@@ -49,7 +49,7 @@ if __name__ == "__main__":
         res = filter_modules(res, target_modules=cfg["target_modules"])
 
         (
-            res["latencies"],
+            res["latency_list"],
             res["tops_list"],
             res["layer_names"],
             res["modules"],
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         ) = zip(
             *sorted(
                 zip(
-                    res["latencies"],
+                    res["latency_list"],
                     res["tops_list"],
                     res["layer_names"],
                     res["modules"],
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         )
 
         top_k = min(len(res["layer_names"]), cfg["top_k"])
-        res["latencies"] = res["latencies"][:top_k]
+        res["latency_list"] = res["latency_list"][:top_k]
         res["tops_list"] = res["tops_list"][:top_k]
         res["layer_names"] = res["layer_names"][:top_k]
         res["modules"] = res["modules"][:top_k]
@@ -106,7 +106,7 @@ if __name__ == "__main__":
             arithmetric_intensity,
             flops,
         ) in zip(
-            res["latencies"],
+            res["latency_list"],
             res["tops_list"],
             res["layer_names"],
             res["modules"],

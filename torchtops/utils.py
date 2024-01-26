@@ -33,7 +33,7 @@ def get_latency(
     input: Tensor,
     iterations: int = 50,
 ) -> float:
-    latencies = []
+    latency_list = []
     for _ in range(iterations):
         start = torch.cuda.Event(enable_timing=True)
         end = torch.cuda.Event(enable_timing=True)
@@ -41,8 +41,8 @@ def get_latency(
         model(input)
         end.record()
         torch.cuda.synchronize()
-        latencies.append(start.elapsed_time(end))
-    return statistics.median(latencies)  # / 1.0e3
+        latency_list.append(start.elapsed_time(end))
+    return statistics.median(latency_list)  # [ms]
 
 
 def plot_results(res: Dict[str, Any], save_path: str) -> None:
@@ -51,7 +51,7 @@ def plot_results(res: Dict[str, Any], save_path: str) -> None:
     fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
         7, sharex="col", figsize=(10, 16), constrained_layout=True
     )
-    ax1.bar(x, np.array(res["latencies"]) / res["total_latency"] * 100)
+    ax1.bar(x, np.array(res["latency_list"]) / res["total_latency"] * 100)
     ax1.set_ylabel("latency[%]")
 
     ax2.bar(x, np.array(res["tops_list"]) / res["total_tops"] * 100)

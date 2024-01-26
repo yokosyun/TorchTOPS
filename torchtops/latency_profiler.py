@@ -90,7 +90,7 @@ class LatencyProfile(object):
 
             @functools.wraps(_forward)
             def wrap_forward(*args, **kwargs):
-                latencies = []
+                latency_list = []
                 for _ in range(self.iterations):
                     start = torch.cuda.Event(enable_timing=True)
                     end = torch.cuda.Event(enable_timing=True)
@@ -99,11 +99,11 @@ class LatencyProfile(object):
                     end.record()
                     torch.cuda.synchronize()
                     latency = start.elapsed_time(end)  # miliseconds
-                    latencies.append(latency)
+                    latency_list.append(latency)
 
                 params = sum(x.numel() for x in module.parameters())
                 self.trace_params[path] = params
-                self.trace_latency[path] = np.median(latencies)
+                self.trace_latency[path] = np.median(latency_list)
                 self.trace_input_shape[path] = get_shape_of_tensor(
                     args
                 ) + get_shape_of_tensor(kwargs)
