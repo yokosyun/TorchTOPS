@@ -46,7 +46,7 @@ def get_latency(
 
 
 def plot_results(res: Dict[str, Any], save_path: str) -> None:
-    x = res["layer_names"]
+    x = res["layer_name_list"]
 
     fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
         7, sharex="col", figsize=(10, 16), constrained_layout=True

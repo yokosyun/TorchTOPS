@@ -51,7 +51,7 @@ if __name__ == "__main__":
         (
             res["latency_list"],
             res["tops_list"],
-            res["layer_names"],
+            res["layer_name_list"],
             res["modules"],
             res["input_shape_list"],
             res["params_list"],
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                 zip(
                     res["latency_list"],
                     res["tops_list"],
-                    res["layer_names"],
+                    res["layer_name_list"],
                     res["modules"],
                     res["input_shape_list"],
                     res["params_list"],
@@ -77,10 +77,10 @@ if __name__ == "__main__":
             )
         )
 
-        top_k = min(len(res["layer_names"]), cfg["top_k"])
+        top_k = min(len(res["layer_name_list"]), cfg["top_k"])
         res["latency_list"] = res["latency_list"][:top_k]
         res["tops_list"] = res["tops_list"][:top_k]
-        res["layer_names"] = res["layer_names"][:top_k]
+        res["layer_name_list"] = res["layer_name_list"][:top_k]
         res["modules"] = res["modules"][:top_k]
         res["input_shape_list"] = res["input_shape_list"][:top_k]
         res["params_list"] = res["params_list"][:top_k]
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         ) in zip(
             res["latency_list"],
             res["tops_list"],
-            res["layer_names"],
+            res["layer_name_list"],
             res["modules"],
             res["input_shape_list"],
             res["params_list"],

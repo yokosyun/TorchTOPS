@@ -15,7 +15,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
 
     latency_list = []
     tops_list = []
-    layer_names = []
+    layer_name_list = []
     modules = []
     input_shape_list = []
     params_list = []
@@ -27,7 +27,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
         flops = flops_dict.get(layer_name, 0)
         if flops > 0:
             tops = flops / latency / 1.0e9
-            layer_names.append(layer_name)
+            layer_name_list.append(layer_name)
             tops_list.append(tops)
             latency_list.append(latency)
             modules.append(get_module_by_layer_name(model, layer_name))
@@ -44,7 +44,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
             flops_list.append(flops)
 
     return {
-        "layer_names": layer_names,
+        "layer_name_list": layer_name_list,
         "latency_list": latency_list,
         "tops_list": tops_list,
         "modules": modules,
