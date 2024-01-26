@@ -4,7 +4,7 @@
 This toolkit evaluate layer level TOPS(Terra Operations Per Second)
 
 these items will be retuned by profile
-- layer_names (List[str]) - List of layer names
+- layer_name_list (List[str]) - List of layer names
 - latency_list (List[float]) - List of latency in miliseconds
 - tops_list (List[float]) - List of tops
 - modules (List[nn.Module]) - List of nn.Module
@@ -26,11 +26,11 @@ res = profile(model, img)
 
 res = filter_modules(res, target_modules=["Conv2d"]) # filter nn.Module you want to get
 
-tops_list, layer_names, modules = zip(
-        *sorted(zip(res["tops_list"], res["layer_names"], res["modules"]))
+tops_list, layer_name_list, modules = zip(
+        *sorted(zip(res["tops_list"], res["layer_name_list"], res["modules"]))
     )
 
-for tops, layer_name, module in zip(tops_list, layer_names, modules):
+for tops, layer_name, module in zip(tops_list, layer_name_list, modules):
         print(f"{tops:.3f}  => {layer_name} : {module}")
 ```
 
