@@ -17,7 +17,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
     tops_list = []
     layer_names = []
     modules = []
-    input_shapes = []
+    input_shape_list = []
     params_list = []
     read_counts_list = []
     write_counts_list = []
@@ -31,7 +31,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
             tops_list.append(tops)
             latency_list.append(latency)
             modules.append(get_module_by_layer_name(model, layer_name))
-            input_shapes.append(prof.trace_input_shape[layer_name])
+            input_shape_list.append(prof.trace_input_shape[layer_name])
             params_list.append(prof.trace_params[layer_name])
             read_counts_list.append(prof.trace_read_counts[layer_name])
             write_counts_list.append(prof.trace_write_counts[layer_name])
@@ -48,7 +48,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
         "latency_list": latency_list,
         "tops_list": tops_list,
         "modules": modules,
-        "input_shapes": input_shapes,
+        "input_shape_list": input_shape_list,
         "params_list": params_list,
         "read_counts_list": read_counts_list,
         "write_counts_list": write_counts_list,
