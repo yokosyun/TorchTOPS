@@ -2,20 +2,10 @@ import os
 import argparse
 import yaml
 from itertools import islice
-import matplotlib.pyplot as plt
 import torch
 import torchvision
 from torchtops import profile, filter_modules
-
-
-def plot_results(x, y, main_title: str, sub_title: str, y_label: str, filename: str):
-    fig, ax = plt.subplots()
-    plt.suptitle(main_title)
-    plt.title(sub_title, fontsize=12)
-    ax.bar(x, y)
-    fig.autofmt_xdate()
-    plt.ylabel(y_label)
-    fig.savefig(filename)
+from torchtops.utils import get_latency, plot_results
 
 
 def get_argparse():
@@ -43,27 +33,80 @@ if __name__ == "__main__":
 
     img = torch.rand(cfg["input_shape"])
 
+    if cfg["use_half"]:
+        model = model.to(torch.float16)
+        img = img.to(torch.float16)
+
     if cfg["use_cuda"]:
         model = model.cuda()
         img = img.cuda()
 
-    res = profile(model, img)
+    # warmup
+    get_latency(model, img)
 
-    res = filter_modules(res, target_modules=cfg["target_modules"])
+    with torch.no_grad():
+        res = profile(model, img)
 
-    sub_title = "shape=(" + ",".join(map(str, img.shape)) + ")"
-    (
-        tops_list,
-        layer_names,
-        modules,
-        input_shapes,
-        params_list,
-        read_counts_list,
-        write_counts_list,
-        arithmetric_intensity_list,
-    ) = zip(
-        *sorted(
+        res = filter_modules(res, target_modules=cfg["target_modules"])
+
+        sub_title = "shape=(" + ",".join(map(str, img.shape)) + ")"
+        (
+            res["latencies"],
+            res["tops_list"],
+            res["layer_names"],
+            res["modules"],
+            res["input_shapes"],
+            res["params_list"],
+            res["read_counts_list"],
+            res["write_counts_list"],
+            res["arithmetric_intensity_list"],
+            res["flops_list"],
+        ) = zip(
+            *sorted(
+                zip(
+                    res["latencies"],
+                    res["tops_list"],
+                    res["layer_names"],
+                    res["modules"],
+                    res["input_shapes"],
+                    res["params_list"],
+                    res["read_counts_list"],
+                    res["write_counts_list"],
+                    res["arithmetric_intensity_list"],
+                    res["flops_list"],
+                ),
+                reverse=True,
+            )
+        )
+
+        worst_k = min(len(res["layer_names"]), cfg["worst_k"])
+
+        save_path = os.path.join(cfg["save_dir"], cfg["model_name"] + ".jpg")
+
+        # Plots
+        plot_results(
+            res,
+            worst_k,
+            save_path,
+        )
+
+        print(f"saved to {save_path}")
+
+        print("=== top_k slow layers ===")
+        for (
+            latency,
+            tops,
+            layer_name,
+            module,
+            input_shape,
+            params,
+            read_counts,
+            write_counts,
+            arithmetric_intensity,
+            flops,
+        ) in islice(
             zip(
+                res["latencies"],
                 res["tops_list"],
                 res["layer_names"],
                 res["modules"],
@@ -72,51 +115,21 @@ if __name__ == "__main__":
                 res["read_counts_list"],
                 res["write_counts_list"],
                 res["arithmetric_intensity_list"],
+                res["flops_list"],
+            ),
+            worst_k,
+        ):
+            mega_params = params * 1e-6
+            print(
+                f"{latency:.3f} [ms] {tops:.3f}  => {layer_name} : {module} : {input_shape}"
             )
-        )
-    )
+            print(
+                f"params={mega_params:.3f} [M], flops={flops}, read_couts={read_counts}, write_counts={write_counts}, arithmetric_intensity={arithmetric_intensity}"
+            )
+            print()
 
-    worst_k = min(len(layer_names), cfg["worst_k"])
-
-    save_path = cfg["save_dir"] + "/" + cfg["model_name"] + ".jpg"
-
-    plot_results(
-        x=layer_names[:worst_k],
-        y=tops_list[:worst_k],
-        main_title=cfg["model_name"],
-        sub_title=sub_title,
-        y_label="TOPS",
-        filename=save_path,
-    )
-
-    print(f"saved to {save_path}")
-
-    print("=== low TOPS layers ===")
-    for (
-        tops,
-        layer_name,
-        module,
-        input_shape,
-        params,
-        read_counts,
-        write_counts,
-        arithmetric_intensity,
-    ) in islice(
-        zip(
-            tops_list,
-            layer_names,
-            modules,
-            input_shapes,
-            params_list,
-            read_counts_list,
-            write_counts_list,
-            arithmetric_intensity_list,
-        ),
-        worst_k,
-    ):
-        mega_params = params * 1e-6
-        print(f"{tops:.3f}  => {layer_name} : {module} : {input_shape}")
+        latency = get_latency(model, img)
+        latency_overhead = (res["total_latency"] - latency) / latency * 100
         print(
-            f"params={mega_params:.3f} [M], read_couts={read_counts}, write_counts={write_counts}, arithmetric_intensity={arithmetric_intensity}"
+            f"latency = {latency:.3f} [ms], profiler latency overhead={latency_overhead:.2f} [%]"
         )
-        print()

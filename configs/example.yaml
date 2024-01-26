@@ -1,10 +1,11 @@
-model_name: "resnet152"
+model_name: "resnet50"
 model_cfg:
   weights:
 
-input_shape: [1, 3, 224, 224]
+input_shape: [1, 3, 512, 512]
+use_half: True
 use_cuda: True
-worst_k: 10
+worst_k: 30
 target_modules:
   - "Conv2d"
   - "Conv1d"
