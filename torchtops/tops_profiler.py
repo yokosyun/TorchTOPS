@@ -13,7 +13,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
     with LatencyProfile(model) as prof:
         model(input_data)
 
-    latencies = []
+    latency_list = []
     tops_list = []
     layer_names = []
     modules = []
@@ -29,7 +29,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
             tops = flops / latency / 1.0e9
             layer_names.append(layer_name)
             tops_list.append(tops)
-            latencies.append(latency)
+            latency_list.append(latency)
             modules.append(get_module_by_layer_name(model, layer_name))
             input_shapes.append(prof.trace_input_shape[layer_name])
             params_list.append(prof.trace_params[layer_name])
@@ -45,7 +45,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
 
     return {
         "layer_names": layer_names,
-        "latencies": latencies,
+        "latency_list": latency_list,
         "tops_list": tops_list,
         "modules": modules,
         "input_shapes": input_shapes,
@@ -59,6 +59,6 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
         "total_flops": sum(flops_list),
         "total_read_counts": sum(read_counts_list),
         "total_write_counts": sum(write_counts_list),
-        "total_latency": sum(latencies),
+        "total_latency": sum(latency_list),
         "total_arithmetric_intensity": sum(arithmetric_intensity_list),
     }
