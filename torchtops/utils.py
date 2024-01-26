@@ -56,19 +56,19 @@ def plot_results(res: Dict[str, Any], save_path: str) -> None:
     ax1.bar(x, np.array(res["latency_list"]) / res["total_latency"] * 100)
     ax1.set_ylabel("latency[%]")
 
-    ax2.bar(x, np.array(res["tops_list"]) / res["total_tops"] * 100)
-    ax2.set_ylabel("TOPS[%]")
+    ax2.bar(x, np.array(res["flops_list"]) / res["total_flops"] * 100)
+    ax2.set_ylabel("FLOPs[%]")
 
-    ax3.bar(
+    ax3.bar(x, np.array(res["tops_list"]) / res["total_tops"] * 100)
+    ax3.set_ylabel("TOPS[%]")
+
+    ax4.bar(
         x,
         np.array(res["arithmetric_intensity_list"])
         / res["total_arithmetric_intensity"]
         * 100,
     )
-    ax3.set_ylabel("arith_intensity[%]")
-
-    ax4.bar(x, np.array(res["flops_list"]) / res["total_flops"] * 100)
-    ax4.set_ylabel("FLOPs[%]")
+    ax4.set_ylabel("arith_intensity[%]")
 
     ax5.bar(x, np.array(res["params_list"]) / res["total_params"] * 100)
     ax5.set_ylabel("params[%]")
