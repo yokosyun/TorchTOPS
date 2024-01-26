@@ -50,28 +50,28 @@ if __name__ == "__main__":
 
         (
             res["latency_list"],
+            res["flops_list"],
             res["tops_list"],
-            res["layer_name_list"],
-            res["module_list"],
-            res["input_shape_list"],
+            res["arithmetric_intensity_list"],
             res["params_list"],
             res["read_counts_list"],
             res["write_counts_list"],
-            res["arithmetric_intensity_list"],
-            res["flops_list"],
+            res["layer_name_list"],
+            res["module_list"],
+            res["input_shape_list"],
         ) = zip(
             *sorted(
                 zip(
                     res["latency_list"],
+                    res["flops_list"],
                     res["tops_list"],
-                    res["layer_name_list"],
-                    res["module_list"],
-                    res["input_shape_list"],
+                    res["arithmetric_intensity_list"],
                     res["params_list"],
                     res["read_counts_list"],
                     res["write_counts_list"],
-                    res["arithmetric_intensity_list"],
-                    res["flops_list"],
+                    res["layer_name_list"],
+                    res["module_list"],
+                    res["input_shape_list"],
                 ),
                 reverse=True,
             )
@@ -79,15 +79,15 @@ if __name__ == "__main__":
 
         top_k = min(len(res["layer_name_list"]), cfg["top_k"])
         res["latency_list"] = res["latency_list"][:top_k]
+        res["flops_list"] = res["flops_list"][:top_k]
         res["tops_list"] = res["tops_list"][:top_k]
-        res["layer_name_list"] = res["layer_name_list"][:top_k]
-        res["module_list"] = res["module_list"][:top_k]
-        res["input_shape_list"] = res["input_shape_list"][:top_k]
+        res["arithmetric_intensity_list"] = res["arithmetric_intensity_list"][:top_k]
         res["params_list"] = res["params_list"][:top_k]
         res["read_counts_list"] = res["read_counts_list"][:top_k]
         res["write_counts_list"] = res["write_counts_list"][:top_k]
-        res["arithmetric_intensity_list"] = res["arithmetric_intensity_list"][:top_k]
-        res["flops_list"] = res["flops_list"][:top_k]
+        res["layer_name_list"] = res["layer_name_list"][:top_k]
+        res["module_list"] = res["module_list"][:top_k]
+        res["input_shape_list"] = res["input_shape_list"][:top_k]
 
         save_path = os.path.join(cfg["save_dir"], cfg["model_name"] + ".jpg")
         plot_results(res, save_path)
@@ -96,26 +96,26 @@ if __name__ == "__main__":
         print("=== top_k slow layers ===")
         for (
             latency,
+            flops,
             tops,
-            layer_name,
-            module,
-            input_shape,
+            arithmetric_intensity,
             params,
             read_counts,
             write_counts,
-            arithmetric_intensity,
-            flops,
+            layer_name,
+            module,
+            input_shape,
         ) in zip(
             res["latency_list"],
+            res["flops_list"],
             res["tops_list"],
-            res["layer_name_list"],
-            res["module_list"],
-            res["input_shape_list"],
+            res["arithmetric_intensity_list"],
             res["params_list"],
             res["read_counts_list"],
             res["write_counts_list"],
-            res["arithmetric_intensity_list"],
-            res["flops_list"],
+            res["layer_name_list"],
+            res["module_list"],
+            res["input_shape_list"],
         ):
             mega_params = params * 1e-6
             print(
