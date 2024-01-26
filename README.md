@@ -1,14 +1,6 @@
 # torchtops(Pytorch TOPS)
 [![Pypi version](https://img.shields.io/pypi/v/torchtops.svg)](https://pypi.org/project/torchtops/)
 
-This toolkit evaluate layer level TOPS(Terra Operations Per Second)
-
-these items will be retuned by profile
-- layer_name_list (List[str]) - List of layer names
-- latency_list (List[float]) - List of latency in miliseconds
-- tops_list (List[float]) - List of tops
-- modules (List[nn.Module]) - List of nn.Module
-- total_flops (int) - total flops of the model
 
 ## Quickstart
 
@@ -26,11 +18,11 @@ res = profile(model, img)
 
 res = filter_modules(res, target_modules=["Conv2d"]) # filter nn.Module you want to get
 
-tops_list, layer_name_list, modules = zip(
+tops_list, layer_name_list, module_list = zip(
         *sorted(zip(res["tops_list"], res["layer_name_list"], res["module_list"]))
     )
 
-for tops, layer_name, module in zip(tops_list, layer_name_list, modules):
+for tops, layer_name, module in zip(tops_list, layer_name_list, module_list):
         print(f"{tops:.3f}  => {layer_name} : {module}")
 ```
 
@@ -64,11 +56,5 @@ this results depend on your hardware
 python3.8 tools/example.py
 ```
 
-### ResNet152
-<img src="resources/resnet152.jpg" width="600">
-
-### Vit_b_16
-<img src="resources/vit_b_16.jpg" width="600">
-
-### Swin_v2_b
-<img src="resources/swin_v2_b.jpg" width="600">
+### ResNet50
+<img src="resources/resnet50.jpg" width="600">
