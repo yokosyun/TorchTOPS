@@ -45,40 +45,38 @@ def get_latency(
     return statistics.median(latencies)  # / 1.0e3
 
 
-def plot_results(res: Dict[str, Any], top_k: int, save_path: str) -> None:
-    x = res["layer_names"][:top_k]
+def plot_results(res: Dict[str, Any], save_path: str) -> None:
+    x = res["layer_names"]
 
     fig, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(
         7, sharex="col", figsize=(10, 16), constrained_layout=True
     )
-    ax1.bar(x, np.array(res["latencies"][:top_k]) / res["total_latency"] * 100)
+    ax1.bar(x, np.array(res["latencies"]) / res["total_latency"] * 100)
     ax1.set_ylabel("latency[%]")
 
-    ax2.bar(x, np.array(res["tops_list"][:top_k]) / res["total_tops"] * 100)
+    ax2.bar(x, np.array(res["tops_list"]) / res["total_tops"] * 100)
     ax2.set_ylabel("TOPS[%]")
 
     ax3.bar(
         x,
-        np.array(res["arithmetric_intensity_list"][:top_k])
+        np.array(res["arithmetric_intensity_list"])
         / res["total_arithmetric_intensity"]
         * 100,
     )
     ax3.set_ylabel("arith_intensity[%]")
 
-    ax4.bar(x, np.array(res["flops_list"][:top_k]) / res["total_flops"] * 100)
+    ax4.bar(x, np.array(res["flops_list"]) / res["total_flops"] * 100)
     ax4.set_ylabel("FLOPs[%]")
 
-    ax5.bar(x, np.array(res["params_list"][:top_k]) / res["total_params"] * 100)
+    ax5.bar(x, np.array(res["params_list"]) / res["total_params"] * 100)
     ax5.set_ylabel("params[%]")
 
-    ax6.bar(
-        x, np.array(res["read_counts_list"][:top_k]) / res["total_read_counts"] * 100
-    )
+    ax6.bar(x, np.array(res["read_counts_list"]) / res["total_read_counts"] * 100)
     ax6.set_ylabel("read_counts[%]")
 
     ax7.bar(
         x,
-        np.array(res["write_counts_list"][:top_k]) / res["total_write_counts"] * 100,
+        np.array(res["write_counts_list"]) / res["total_write_counts"] * 100,
     )
     ax7.set_ylabel("write_counts[%]")
 
