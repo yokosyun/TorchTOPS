@@ -79,14 +79,14 @@ if __name__ == "__main__":
             )
         )
 
-        worst_k = min(len(res["layer_names"]), cfg["worst_k"])
+        top_k = min(len(res["layer_names"]), cfg["top_k"])
 
         save_path = os.path.join(cfg["save_dir"], cfg["model_name"] + ".jpg")
 
         # Plots
         plot_results(
             res,
-            worst_k,
+            top_k,
             save_path,
         )
 
@@ -117,7 +117,7 @@ if __name__ == "__main__":
                 res["arithmetric_intensity_list"],
                 res["flops_list"],
             ),
-            worst_k,
+            top_k,
         ):
             mega_params = params * 1e-6
             print(
