@@ -1,7 +1,6 @@
 import os
 import argparse
 import yaml
-from itertools import islice
 import torch
 import torchvision
 from torchtops import profile, filter_modules
@@ -49,7 +48,6 @@ if __name__ == "__main__":
 
         res = filter_modules(res, target_modules=cfg["target_modules"])
 
-        sub_title = "shape=(" + ",".join(map(str, img.shape)) + ")"
         (
             res["latencies"],
             res["tops_list"],
@@ -80,16 +78,19 @@ if __name__ == "__main__":
         )
 
         top_k = min(len(res["layer_names"]), cfg["top_k"])
+        res["latencies"] = res["latencies"][:top_k]
+        res["tops_list"] = res["tops_list"][:top_k]
+        res["layer_names"] = res["layer_names"][:top_k]
+        res["modules"] = res["modules"][:top_k]
+        res["input_shapes"] = res["input_shapes"][:top_k]
+        res["params_list"] = res["params_list"][:top_k]
+        res["read_counts_list"] = res["read_counts_list"][:top_k]
+        res["write_counts_list"] = res["write_counts_list"][:top_k]
+        res["arithmetric_intensity_list"] = res["arithmetric_intensity_list"][:top_k]
+        res["flops_list"] = res["flops_list"][:top_k]
 
         save_path = os.path.join(cfg["save_dir"], cfg["model_name"] + ".jpg")
-
-        # Plots
-        plot_results(
-            res,
-            top_k,
-            save_path,
-        )
-
+        plot_results(res, save_path)
         print(f"saved to {save_path}")
 
         print("=== top_k slow layers ===")
@@ -104,20 +105,17 @@ if __name__ == "__main__":
             write_counts,
             arithmetric_intensity,
             flops,
-        ) in islice(
-            zip(
-                res["latencies"],
-                res["tops_list"],
-                res["layer_names"],
-                res["modules"],
-                res["input_shapes"],
-                res["params_list"],
-                res["read_counts_list"],
-                res["write_counts_list"],
-                res["arithmetric_intensity_list"],
-                res["flops_list"],
-            ),
-            top_k,
+        ) in zip(
+            res["latencies"],
+            res["tops_list"],
+            res["layer_names"],
+            res["modules"],
+            res["input_shapes"],
+            res["params_list"],
+            res["read_counts_list"],
+            res["write_counts_list"],
+            res["arithmetric_intensity_list"],
+            res["flops_list"],
         ):
             mega_params = params * 1e-6
             print(
