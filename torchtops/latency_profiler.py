@@ -98,7 +98,7 @@ class LatencyProfile(object):
                     results = _forward(*args, **kwargs)
                     end.record()
                     torch.cuda.synchronize()
-                    latency = start.elapsed_time(end) / 1000  # miliseconds to seconds
+                    latency = start.elapsed_time(end)  # miliseconds
                     latencies.append(latency)
 
                 params = sum(x.numel() for x in module.parameters())

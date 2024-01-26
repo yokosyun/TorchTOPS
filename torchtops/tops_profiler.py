@@ -23,10 +23,11 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
     read_counts_list = []
     write_counts_list = []
     arithmetric_intensity_list = []
+    flops_list = []
     for layer_name, latency in prof.trace_latency.items():
         flops = flops_dict.get(layer_name, 0)
         if flops > 0:
-            tops = flops / latency / 1.0e12
+            tops = flops / latency / 1.0e9
             layer_names.append(layer_name)
             tops_list.append(tops)
             latencies.append(latency)
@@ -38,9 +39,10 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
             arithmetric_intensity = flops / (
                 prof.trace_read_counts[layer_name]
                 + prof.trace_write_counts[layer_name]
-                + 1e-6
+                + prof.trace_params[layer_name]
             )
             arithmetric_intensity_list.append(arithmetric_intensity)
+            flops_list.append(flops)
 
     return {
         "layer_names": layer_names,
@@ -53,4 +55,5 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
         "read_counts_list": read_counts_list,
         "write_counts_list": write_counts_list,
         "arithmetric_intensity_list": arithmetric_intensity_list,
+        "flops_list": flops_list,
     }
