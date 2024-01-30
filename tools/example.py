@@ -44,7 +44,7 @@ if __name__ == "__main__":
     get_latency(model, img)
 
     with torch.no_grad():
-        res = profile(model, img)
+        res = profile(model, img, target_modules=cfg["target_modules"])
 
         res = filter_modules(res, target_modules=cfg["target_modules"])
 

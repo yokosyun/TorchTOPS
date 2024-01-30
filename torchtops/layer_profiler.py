@@ -11,17 +11,25 @@ from torchtops.utils import get_module_by_layer_name
 Trace = namedtuple("Trace", ["path", "leaf", "module"])
 
 
-def walk_modules(module, name="", path=""):
+def walk_modules(module, name="", path="", target_modules=[]):
     """Generator. Walks through a PyTorch Module and outputs Trace tuples"""
     named_children = list(module.named_children())
     if path != "":
         path = path + "."
 
     path = path + name
-    yield Trace(path, len(named_children) == 0, module)
-    # recursively walk into all submodules
-    for name, child_module in named_children:
-        yield from walk_modules(child_module, name=name, path=path)
+
+    # Stop tracing at target modules
+    if module.__class__.__name__ in target_modules:
+        yield Trace(path, True, module)
+    # Trace until no children nn.Module
+    else:
+        yield Trace(path, len(named_children) == 0, module)
+        # recursively walk into all submodules
+        for name, child_module in named_children:
+            yield from walk_modules(
+                child_module, name=name, path=path, target_modules=target_modules
+            )
 
 
 def get_shape_of_tensor(inputs: Union[Tensor, List, Tuple, Dict]) -> List[List[int]]:
@@ -51,7 +59,13 @@ def numel(inputs: Union[Tensor, List, Tuple, Dict]) -> int:
 class LayerProfiler(object):
     """Layer by layer profiling latency of PyTorch models"""
 
-    def __init__(self, model, enabled=True):
+    def __init__(
+        self,
+        model,
+        enabled=True,
+        target_modules: List[str] = [],
+        profile_children: bool = False,
+    ):
         self._model = model
         self.enabled = enabled
         self.traces = ()
@@ -63,12 +77,19 @@ class LayerProfiler(object):
         self.trace_read_counts = defaultdict(int)
         self.trace_write_counts = defaultdict(int)
         self.iterations = 10
+        self.target_modules = target_modules
+        self.profile_children = profile_children
 
     def __enter__(self):
         if not self.enabled:
             return self
         self._forwards = {}  # store the original forward functions
-        self.traces = tuple(map(self._hook_trace, walk_modules(self._model)))
+        self.traces = tuple(
+            map(
+                self._hook_trace,
+                walk_modules(self._model, target_modules=self.target_modules),
+            )
+        )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -91,31 +112,48 @@ class LayerProfiler(object):
             _forward = module.forward
             self._forwards[path] = _forward
 
-            @functools.wraps(_forward)
-            def wrap_forward(*args, **kwargs):
-                latency_list = []
-                for _ in range(self.iterations):
-                    start = torch.cuda.Event(enable_timing=True)
-                    end = torch.cuda.Event(enable_timing=True)
-                    start.record()
+            if self.profile_children:
+
+                def get_io(module, input, output):
+                    self.trace_read_counts[path] += numel(input)
+                    self.trace_write_counts[path] += numel(output)
+
+                def trace_forward(module):
+                    if len(list(module.named_children())) == 0:
+                        module.register_forward_hook(get_io)
+                    else:
+                        for name, child_module in module.named_children():
+                            trace_forward(child_module)
+
+                trace_forward(module)
+            else:
+
+                @functools.wraps(_forward)
+                def wrap_forward(*args, **kwargs):
                     results = _forward(*args, **kwargs)
-                    end.record()
-                    torch.cuda.synchronize()
-                    latency = start.elapsed_time(end)  # miliseconds
-                    latency_list.append(latency)
+                    latency_list = []
+                    for _ in range(self.iterations):
+                        start = torch.cuda.Event(enable_timing=True)
+                        end = torch.cuda.Event(enable_timing=True)
+                        start.record()
+                        _forward(*args, **kwargs)
+                        end.record()
+                        torch.cuda.synchronize()
+                        latency = start.elapsed_time(end)  # miliseconds
+                        latency_list.append(latency)
 
-                params = sum(x.numel() for x in module.parameters())
-                self.trace_params[path] = params
-                self.trace_latency[path] = np.median(latency_list)
-                self.trace_input_shape[path] = get_shape_of_tensor(
-                    args
-                ) + get_shape_of_tensor(kwargs)
-                self.trace_read_counts[path] = numel(args) + numel(kwargs)
-                self.trace_write_counts[path] = numel(results)
+                    self.trace_latency[path] = np.median(latency_list)
 
-                return results
+                    params = sum(x.numel() for x in module.parameters())
+                    self.trace_params[path] = params
+                    self.trace_input_shape[path] = get_shape_of_tensor(
+                        args
+                    ) + get_shape_of_tensor(kwargs)
 
-            module.forward = wrap_forward
+                    return results
+
+                module.forward = wrap_forward
+
         return trace
 
     def _remove_hook_trace(self, trace):
@@ -129,11 +167,20 @@ class LayerProfiler(object):
             module.forward = self._forwards[path]
 
 
-def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
+def profile(
+    model: nn.Module, input_data: Tensor, target_modules: List[str] = []
+) -> Dict[str, Any]:
     flops_counter = FlopCountAnalysis(model, input_data)
     flops_dict = flops_counter.by_module()
 
-    with LayerProfiler(model) as prof:
+    with LayerProfiler(
+        model, target_modules=target_modules, profile_children=False
+    ) as prof:
+        model(input_data)
+
+    with LayerProfiler(
+        model, target_modules=target_modules, profile_children=True
+    ) as prof_children:
         model(input_data)
 
     latency_list = []
@@ -146,6 +193,7 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
     write_counts_list = []
     arithmetric_intensity_list = []
     flops_list = []
+
     for layer_name, latency in prof.trace_latency.items():
         flops = flops_dict.get(layer_name, 0)
         if flops > 0:
@@ -156,11 +204,11 @@ def profile(model: nn.Module, input_data: Tensor) -> Dict[str, Any]:
             modules.append(get_module_by_layer_name(model, layer_name))
             input_shape_list.append(prof.trace_input_shape[layer_name])
             params_list.append(prof.trace_params[layer_name])
-            read_counts_list.append(prof.trace_read_counts[layer_name])
-            write_counts_list.append(prof.trace_write_counts[layer_name])
+            read_counts_list.append(prof_children.trace_read_counts[layer_name])
+            write_counts_list.append(prof_children.trace_write_counts[layer_name])
             arithmetric_intensity = flops / (
-                prof.trace_read_counts[layer_name]
-                + prof.trace_write_counts[layer_name]
+                prof_children.trace_read_counts[layer_name]
+                + prof_children.trace_write_counts[layer_name]
                 + prof.trace_params[layer_name]
             )
             arithmetric_intensity_list.append(arithmetric_intensity)

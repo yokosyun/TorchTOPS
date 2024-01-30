@@ -10,6 +10,7 @@ target_modules:
   - "Conv2d"
   - "Conv1d"
   - "Linear"
+  - "Bottleneck"
   # - "ReLU"
   # - "BatchNorm2d"
 save_dir: "results"
