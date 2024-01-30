@@ -62,12 +62,10 @@ class LayerProfiler(object):
     def __init__(
         self,
         model,
-        enabled=True,
         target_modules: List[str] = [],
         profile_children: bool = False,
     ):
         self._model = model
-        self.enabled = enabled
         self.traces = ()
         self._ids = set()
         self.trace_latency = defaultdict(float)
@@ -81,8 +79,6 @@ class LayerProfiler(object):
         self.profile_children = profile_children
 
     def __enter__(self):
-        if not self.enabled:
-            return self
         self._forwards = {}  # store the original forward functions
         self.traces = tuple(
             map(
@@ -93,8 +89,6 @@ class LayerProfiler(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if not self.enabled:
-            return
         tuple(map(self._remove_hook_trace, self.traces))
         del self._forwards  # remove unnecessary forwards
 
